@@ -167,8 +167,6 @@
 	
 	
 	
-	
-	
 /***************************************************************************************
        PLUGINS - Make View Pluginable
        
@@ -325,6 +323,8 @@
 		
 		
 		
+		
+		
 		// -- BackboneJS
 		// Default BackboneJS extends
 		var ex = _extend.apply( this, arguments );
@@ -350,8 +350,8 @@
 			
 		}
 		
+		// Attach merged declarative events
 		ex.prototype.events 				= $.extend( true, {}, protoEvents, 				childEvents );
-		
 		ex.prototype.modelEvents 			= $.extend( true, {}, protoModelEvents, 		childModelEvents );
 		ex.prototype.collectionEvents 		= $.extend( true, {}, protoCollectionEvents, 	childCollectionEvents );
 		ex.prototype.viewEvents 			= $.extend( true, {}, protoViewEvents, 			childViewEvents );
@@ -360,13 +360,60 @@
 		
 		
 		
-		// Implement super() emulation.
-		// return a link to the parent prototype.
-		//
-		// this.sup().methodName.apply( this, arguments )
-		ex.prototype.sup = function() {
+
+
+
+
+
+
+
+/***************************************************************************************
+       SUPER Emulation
+       
+       this.$call( 'method', p1, p2, ... )
+       this.$apply( 'method', [ p1, p2, ... ] )
+       
+***************************************************************************************/
+		
+		// Save the parent prototype reference.
+		ex.prototype._super = this.prototype;
+		
+		
+		ex.prototype.$call = function() {
 			
-			return this.__proto__.__proto__;
+			// Fetch the "super" reference from the context or from the prototype.
+			var _super = this.__super || this.constructor.prototype._super;
+			
+			// Setup a "double super" reference into the context so parent's $super methods
+			// will use this as _super (before instruction)
+			this.__super = _super._super;
+			
+			var _args = _.values( arguments );
+			
+			var _methodName = _args.shift();
+			
+			if ( !_super[_methodName] ) return;
+			
+			_method = _super[_methodName];
+			
+			return _method.apply( this, _args );
+			
+		}
+		
+		ex.prototype.$apply = function( _methodName, arguments ) {
+			
+			// Fetch the "super" reference from the context or from the prototype.
+			var _super = this.__super || this.constructor.prototype._super;
+			
+			// Setup a "double super" reference into the context so parent's $super methods
+			// will use this as _super (before instruction)
+			this.__super = _super._super;
+			
+			if ( !_super[_methodName] ) return;
+			
+			_method = _super[_methodName];
+			
+			return _method.apply( this, arguments );
 			
 		}
 		
@@ -558,7 +605,8 @@
 		_ensureConfigurablePlugins: function() {
 			
 			// Attach configurable plugins
-			this.__proto__.constructor.attachPlugins();
+			this.constructor.attachPlugins();
+			
 			
 		},
 		
@@ -828,10 +876,15 @@
 		}
 
 
-	
+
 	// --------------------------------------------------
 	}); // End Backbone.View extension
 	// --------------------------------------------------
+	
+	
+
+
+
 
 
 
