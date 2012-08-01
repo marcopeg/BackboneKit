@@ -17,6 +17,12 @@
 
 
 
+
+/***************************************************************************************
+       BACKBONE CORE OBJECT
+       
+***************************************************************************************/
+	
 	_.extend( Backbone, {
 		
 		Kit: {
@@ -140,43 +146,7 @@
 						
 				};
 				
-			},
-			
-			
-			
-			/**
-			 * Walk throught class ancestors to inherith (mixing) required property.
-			 */
-			__TO__DELETE__inheritProperty: function( obj, pro ) {
-				
-				// Compose the list of property value versions across class ancestors.
-				
-				var v = [];
-				
-				var p = obj.__proto__;
-				
-				while ( _.isObject(p) ) {
-					
-					//obj[pro] = $.extend( true, {}, p[pro], obj[pro] );
-					if ( p[pro] ) v.push( p[pro] );
-					
-					p = p.__proto__;
-					
-				}
-				
-				// Apply new values level after level.
-				
-				obj[pro] = null;
-				
-				_.each( v.reverse(), function( step ) {
-					
-					obj[pro] = $.extend( true, {}, obj[pro], step );
-					
-				}, this );
-				
 			}
-
-			
 			
 		}
 		
@@ -193,17 +163,12 @@
 ***************************************************************************************/
 	
 	window.Kit = Backbone.Kit;
-
-
-
-
-
-
-
-
-
-
-
+	
+	
+	
+	
+	
+	
 
 
 /***************************************************************************************
@@ -270,7 +235,7 @@
 				
 			});
 			
-		}
+		};
 		
 		// Attach merged declarative events
 		ex.prototype.events 				= $.extend( true, {}, protoEvents, 				childEvents );
@@ -305,7 +270,7 @@
 			
 			return this._super;
 			
-		}
+		};
 		
 		ex.prototype.$call = function() {
 			
@@ -369,7 +334,7 @@
 			
 			return _return;
 				
-		}
+		};
 		
 		ex.prototype.$apply = function() {
 			
@@ -438,7 +403,7 @@
 			
 			return _return;
 			
-		}
+		};
 		
 		
 		return ex;
@@ -446,7 +411,6 @@
 	// ---------------------------------------------------
 	}; // EndOf: View.extend() ---
 	// ---------------------------------------------------
-
 
 
 
@@ -551,7 +515,7 @@
 			
 			plugins = this.prototype.plugins;	
 			
-		}
+		};
 		
 		
 		// Loads plugins
@@ -562,14 +526,21 @@
 		}, this);
 		
 		
-	}
+	};
 	
 	
 	
 
 
-	
-	
+
+
+
+
+
+
+
+
+
 	// Helper function to get a value from a Backbone object as a property
 	// or as a function.
 	var getValue = function(object, prop) { 
@@ -1011,16 +982,11 @@
 	// --------------------------------------------------
 	}); // End Backbone.View extension
 	// --------------------------------------------------
-	
-	
 
 
 
 
 
-
-
-	
 	
 	
 
