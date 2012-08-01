@@ -33,6 +33,38 @@ Pretend to have this situation:
 	- GenderPerson
 		- Employee
 
-		var Person = Backbone.View.extend({
+
+	var Person = Backbone.View.extend({
 		
-		});
+		options: {
+			name: ''
+		},
+		
+		getInfo: function() {
+			return this.options.name;
+		}
+	});
+	
+	var GenderPerson = Person.extend({
+		
+		options: {
+			gender: ''
+		},
+		
+		getInfo: function() {
+			return this.$apply( 'getInfo' ) + ', ' + this.options.gender;
+		}
+		
+	});
+	
+	var Employee = GenderPerson.extend({
+		
+		options: {
+			role: ''
+		},
+		
+		getInfo: function() {
+			return this.$apply( 'getInfo' ) + ', ' + this.options.role;
+		}
+	
+	});
