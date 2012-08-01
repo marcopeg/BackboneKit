@@ -11,6 +11,8 @@
 
 
 
+	
+
 
 
 
@@ -167,8 +169,11 @@
 	
 	
 	
-	
-	
+
+
+
+
+
 
 
 /***************************************************************************************
@@ -183,6 +188,7 @@
 	var _extend = Backbone.View.extend;
 	
 	Backbone.View.extend = function( childProp ) {
+		
 		
 		// Get prototype and new class's options out of the BackboneJS extension logic.
 		var protoOptions = _.clone(this.prototype.options) 	|| {};
@@ -421,6 +427,12 @@
 
 
 
+
+
+
+
+
+
 /***************************************************************************************
        PLUGINS - Make View Pluginable
        
@@ -453,30 +465,24 @@
 		
 		// Extract the before/after kays from the plugin configuration.
 		// Then remove it from the plugin configuration to prevent propagation in the target object
-		var _before = _plugin.before 	|| {};
-		var _after	= _plugin.after 	|| {};
-		
-		if ( _plugin.before ) 	delete _plugin['before'];
-		if ( _plugin.after ) 	delete _plugin['after'];
+		var _before = _plugin.before 	|| {};			if ( _plugin.before ) 	delete _plugin['before'];
+		var _after	= _plugin.after 	|| {};			if ( _plugin.after ) 	delete _plugin['after'];
 		
 		
 		
 		
-		
-		
-		// Internal properties default values
-		_self.attributes 	= _self.attributes 		|| {};
-		_plugin.attributes 	= _plugin.attributes 	|| {};
-		
-				
-		// we add those methods which exists on `_plugin` but not on `_self` to the latter
+		// Apply missing properties and methods.
 		_.defaults( _self, _plugin );
 		
-		// and we do the same for events
-		_.defaults( _self.events, 		_plugin.events );
-		_.defaults( _self.attributes, 	_plugin.attributes );
+		// Apply missing properties to the attribute property.
+		_.defaults( _self.attributes		|| {}, 		_plugin.attributes 			|| {} );
 		
-		
+		// Apply missing event handlers.
+		_.defaults( _self.events			|| {}, 		_plugin.events 				|| {} );
+		_.defaults( _self.viewEvents 		|| {}, 		_plugin.viewEvents 			|| {} );
+		_.defaults( _self.parentEvents 		|| {}, 		_plugin.parentEvents 		|| {} );
+		_.defaults( _self.modelEvents 		|| {}, 		_plugin.modelEvents 		|| {} );
+		_.defaults( _self.collectionEvents 	|| {}, 		_plugin.collectionEvents 	|| {} );
 		
 		
 		
@@ -527,9 +533,14 @@
 		
 		
 	};
-	
-	
-	
+
+
+
+
+
+
+
+
 
 
 
@@ -987,7 +998,12 @@
 
 
 
-	
+
+
+
+
+
+
 	
 
 
