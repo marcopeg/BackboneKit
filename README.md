@@ -9,9 +9,15 @@ You should use BackboneJS the way you know but under the cowling you have much p
 
 I didn't reinvent the wheel... just put elegant white tires on Backbone!
 
-What come with the Kit?
-=======================
+## What come with the Kit?
 
 * Inheritance
 * Plugins support
 * Global access to components
+
+## Where to test it?
+
+I setted up a jsFiddle to fork. 
+It contains the latest versions of jQuery, Underscore, BackboneJS and BackboneKIT.
+
+[open the BackboneKIT fiddle](http://jsfiddle.net/mpeg/r83au/)
