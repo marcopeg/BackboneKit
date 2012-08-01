@@ -41,10 +41,22 @@ Each _type_ of LOTR characters may display different informations but all of the
 
 [I setted up a jsFiddle running example you can fork and play with!](http://jsfiddle.net/mpeg/wU83C/)
 
-### this.$call( 'functionName', p1, p2, ... )
+#### this.$sup()
+Give access to the super object.
+
+#### this.$call( 'functionName', p1, p2, ... )
+
+Try to call "functionName" on the _super_ object.
+It pass "this" as execution context to the super.
+
+You can decide to execute with parent's context by adding "true" as first param:
+
+`this.$call( true, 'functionName', p1, p1, ... )`
+above "functionName" receive `this.$sup()` as context.
 
 
-### this.$apply( 'functionName', [ p1, p2, ... ] );
+#### this.$apply( 'functionName', [ p1, p2, ... ] );
+
+Just like _$call_ but works with arguments list.
 
 
-### this.$sup()
