@@ -29,42 +29,12 @@ Inheritance
 
 Pretend to have this situation:
 
-- Person
-	- GenderPerson
-		- Employee
+- Character
+	- GoodCharacter
+		- Wizard
+	- EvilCharacter
+		- Sorcerer
 
+Every _characters_ have a name and some logic to display itself.
 
-	var Person = Backbone.View.extend({
-		
-		options: {
-			name: ''
-		},
-		
-		getInfo: function() {
-			return this.options.name;
-		}
-	});
-	
-	var GenderPerson = Person.extend({
-		
-		options: {
-			gender: ''
-		},
-		
-		getInfo: function() {
-			return this.$apply( 'getInfo' ) + ', ' + this.options.gender;
-		}
-		
-	});
-	
-	var Employee = GenderPerson.extend({
-		
-		options: {
-			role: ''
-		},
-		
-		getInfo: function() {
-			return this.$apply( 'getInfo' ) + ', ' + this.options.role;
-		}
-	
-	});
+[I setted up a jsFiddle running example you can fork and play with!](http://jsfiddle.net/mpeg/wU83C/)
