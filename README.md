@@ -35,6 +35,16 @@ Pretend to have this situation:
 	- EvilCharacter
 		- Sorcerer
 
-Every _characters_ have a name and some logic to display itself.
+Every _character_ have a name and some logic to display itself.
+Frodo is part of "goods", Gandalf is a good Wizard and Saruman an "evil" Sorcerer.
+Each _type_ of LOTR characters may display different informations but all of them have a name and some shared logics!
 
 [I setted up a jsFiddle running example you can fork and play with!](http://jsfiddle.net/mpeg/wU83C/)
+
+### this.$call( 'functionName', p1, p2, ... )
+
+
+### this.$apply( 'functionName', [ p1, p2, ... ] );
+
+
+### this.$sup()
