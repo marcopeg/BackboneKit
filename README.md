@@ -65,6 +65,10 @@ Just like _$call_ but works with arguments list.
 Declarative Events
 ==================
 
+**Declarative Events** lets you *define all handled events* in a clear ad **DRY notation** according to the Backbone's *event* declarations.
+
+[>> play with Declarative Events on jsFiddle!](http://jsfiddle.net/mpeg/6Nrwz/)
+
 I often need to set up custom events on view's collection, model and view itself just like DOM events.
 BackboneKIT offers a way to write something like:
 
@@ -104,7 +108,5 @@ But I think there is a DRY way to set up events for view's actors:
 	}
 
 [>> play with Declarative Events on jsFiddle!](http://jsfiddle.net/mpeg/6Nrwz/)
-
-**Declarative Events** lets you *define all handled events* in a clear ad DRY notation according to the Backbone's *event* declarations.
 
 
