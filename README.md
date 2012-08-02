@@ -107,6 +107,8 @@ But I think there is a DRY way to set up events for view's actors:
 		'destroy' : 'onParentDestroy'
 	}
 
+[inspiration comes from Codecademy *backbone.declarative* Git ](https://github.com/Codecademy/backbone.declarative)
+
 [>> play with Declarative Events on jsFiddle!](http://jsfiddle.net/mpeg/6Nrwz/)
 
 
