@@ -67,6 +67,8 @@ Declarative Events
 ==================
 
 **Declarative Events** lets you *define all handled events* in a clear ad **DRY notation** according to the Backbone's *event* declarations.
+NOTE: inspiration comes from Codecademy *backbone.declarative* Git:   
+https://github.com/Codecademy/backbone.declarative
 
 [>> play with Declarative Events on jsFiddle!](http://jsfiddle.net/mpeg/6Nrwz/)
 
@@ -107,8 +109,6 @@ But I think there is a DRY way to set up events for view's actors:
 	parentEvents: {
 		'destroy' : 'onParentDestroy'
 	}
-
-[inspiration comes from Codecademy *backbone.declarative* Git ](https://github.com/Codecademy/backbone.declarative)
 
 [>> play with Declarative Events on jsFiddle!](http://jsfiddle.net/mpeg/6Nrwz/)   
 This example show you how to use Declarative Events to DRY bind model's changes into Views.
