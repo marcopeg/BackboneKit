@@ -1,3 +1,4 @@
+
 BackboneKIT
 ===========
 
@@ -109,6 +110,14 @@ But I think there is a DRY way to set up events for view's actors:
 
 [inspiration comes from Codecademy *backbone.declarative* Git ](https://github.com/Codecademy/backbone.declarative)
 
-[>> play with Declarative Events on jsFiddle!](http://jsfiddle.net/mpeg/6Nrwz/)
+[>> play with Declarative Events on jsFiddle!](http://jsfiddle.net/mpeg/6Nrwz/)   
+This example show you how to use Declarative Events to DRY bind model's changes into Views.
 
+[>> play with a real world example about Declarative Events](http://jsfiddle.net/mpeg/etKfb/)   
+This is a **real world example**.    
+You have a list of StarWars characters who comes **form a collection of models**.    
+You can add new items or edit existing ones by **interacting with** the list and the form.
+
+App's components talks all together by **triggering and listening events**.   
+Listening for events is done using the clean _Declarative Events_ offered by BackboneKIT.
 
