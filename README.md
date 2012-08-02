@@ -121,3 +121,32 @@ You can add new items or edit existing ones by **interacting with** the list and
 App's components talks all together by **triggering and listening events**.   
 Listening for events is done using the clean _Declarative Events_ offered by BackboneKIT.
 
+
+
+
+
+
+
+
+Plugin Support
+==============
+
+With the work "plugin" I mean a set of property and methods to be merged with an existing object.    
+One plugin may be added to multiple objects.
+
+	// Define a plugin
+	var myPlugin = {
+		foo: function() { alert("do something"); }
+	};
+	
+	// Apply a plugin to an object
+	var myView = Backbone.View.extend();
+	myView.plugin( myPlugin );
+	
+	// Use the object and plugin's methods
+	var myViewInstance = new myView();
+	myViewInstance.foo();
+
+
+
+
