@@ -5,14 +5,13 @@
 
 
 
-
-
-
-
 /********************************************************
         BackboneKIT - Core Namespace Definition
 *********************************************************/
 ;(function($,_,Backbone){
+	
+	
+	
 	
 	
 	
@@ -399,7 +398,6 @@
 
 
 
-
 /********************************************************
         BackboneKIT - Core View's extend() method logic
         -----------------------------------------------
@@ -678,6 +676,11 @@
 	
 })($,_,Backbone);
 /******* [[    C O R E    V I E W    E X T E N D    ]] ******/
+
+
+
+
+
 
 
 
@@ -1191,7 +1194,7 @@
 			for ( var i=0; i<plugin._.added.properties.length; i++ ) delete this[plugin._.added.properties[i]];
 			
 			// Remove the reference from the loaded plugins list
-			var _plugins = []
+			var _plugins = [];
 			
 			// Unload plugin events:
 			unloadPluginEvents.call( this, plugin );			
@@ -1449,6 +1452,10 @@
 	
 })($,_,Backbone);
 /******* [[    V I E W    E X T E N S I O N    ]] ******/
+
+
+
+
 
 
 
