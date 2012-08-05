@@ -49,6 +49,29 @@ Every _character_ have a name and some logic to display itself.
 Frodo is part of "goods", Gandalf is a good Wizard and Saruman an "evil" Sorcerer.
 Each _type_ of LOTR characters may display different informations but all of them have a name and some shared logics!
 
+	var Container = Backbone.View.extend({
+		
+		render: function( txt ) {
+			
+			this.$el.html( txt )
+		
+		}
+	
+	});
+	
+	
+	var Panel = Container.extend({
+		
+		render: function( txt ) {
+		
+			txt = ' -- panel: ' + txt;
+			
+			this.$call( 'render', txt );
+		
+		}
+	
+	});
+
 [I setted up a jsFiddle running example you can fork and play with!](http://jsfiddle.net/mpeg/wU83C/)
 
 #### this.$sup()
