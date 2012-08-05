@@ -39,6 +39,42 @@ It contains the latest versions of jQuery, Underscore, BackboneJS and BackboneKI
 Callback may be useful when extending components and want to add _pre_ or _post_ logic to a method.
 
 
+#### Methods Callbacks
+For every method you define in a Backbone.View Kit will add a _beforeMethod_ and _afterMethod_ callbacks.
+
+If you define a _render()_ method every descendand classes can interact with a _beforeRender()_ and _afterRender()_ method.
+
+Each callback receives all _arguments_ was given to the original method.   
+_before{Method}_ callbacks may alter arguments by returning an object like this:
+
+	function beforeRender( txt ) {
+		
+		txt = 'my version of text';
+		
+		return {
+			arguments: [ txt ]
+		}
+		
+	}
+
+You can also **prevent the execution of original method** by returning a non null value.  
+Returned value will be sent to the caller and original method logic will not be executed:
+
+	function beforeRender() {
+		
+		if ( this.hasRendered ) return false;
+	
+	}
+
+
+#### Constructor Callbacks
+BackboneKIT redesigns View's contructor() logic and offers you some API to interact with by exposing callbacks:
+
+- beforeConstruct( options ): here you can alter _options_ by returning your custom options object. [try this callback here!](http://jsfiddle.net/mpeg/pAnJe/)
+- afterConfigure()
+- afterConstruct()
+
+
 
 
 
