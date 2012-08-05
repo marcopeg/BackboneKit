@@ -48,7 +48,11 @@ Pretend to have this situation:
 Every _character_ have a name and some logic to display itself.
 Frodo is part of "goods", Gandalf is a good Wizard and Saruman an "evil" Sorcerer.
 Each _type_ of LOTR characters may display different informations but all of them have a name and some shared logics!
-
+	
+	/**
+	 * This is a generic Container class.
+	 * render() will set some text into associated DOM node.
+	 */
 	var Container = Backbone.View.extend({
 		
 		render: function( txt ) {
@@ -59,7 +63,10 @@ Each _type_ of LOTR characters may display different informations but all of the
 	
 	});
 	
-	
+	/**
+	 * This is a Panel.
+	 * render() alters received param then call it's super.
+	 */
 	var Panel = Container.extend({
 		
 		render: function( txt ) {
@@ -72,7 +79,11 @@ Each _type_ of LOTR characters may display different informations but all of the
 	
 	});
 
-[I setted up a jsFiddle running example you can fork and play with!](http://jsfiddle.net/mpeg/wU83C/)
+[jsFiddle for the above code](http://jsfiddle.net/mpeg/etKfb/)
+
+[>> Play with inheritance in this jsFiddle!](http://jsfiddle.net/mpeg/wU83C/)
+In this jsFiddle I set up some LotR characters, Frodo, Gandalf, etc... some are *good characters* and someone else are *bad characters*...  
+Try to extend this example the way you want!
 
 #### this.$sup()
 Give access to the super object.
