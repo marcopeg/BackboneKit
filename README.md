@@ -1,22 +1,36 @@
 
+
 BackboneKIT
 ===========
 
-BackboneJS is a great tool to roganize Javascript code but miss some basic feature like **plugin support** and **inheritance**.
-Inspiration comes from complex tools like ExtJS (aka Sencha) and i'm sure many of your will implement my code better!
+BackboneJS is a great tool to organize Javascript code but miss some basic feature like **plugin support** and **inheritance**.
+Inspiration from missing features comes from more complex tools like ExtJS (aka Sencha)
 
-BackboneKIT is an add-on script that alter the way BackboneJS do some stuff. 
-You should use BackboneJS the way you know but under the cowling you have much power!
+BackboneKIT is an add-on script that alter the way BackboneJS do some stuff.  
+That means **BackboneKIT does NOT alter the way you already use BackboneJS**!
 
-I didn't reinvent the wheel... just put elegant white tires on Backbone!
+You should use BackboneJS the way you know but under the cowling you have much power!  
+You should also use *new methods* and *new objects* supplied by the Kit but it is not  mandatory.
+
+I didn't reinvent the wheel... just put elegant white tires on BackboneJS!
 
 ## What comes with BackboneKit?
 
-* Inheritance
-* Callbacks
-* Declarative Events
-* Plugins Support
-* Global Access to Components
+- **Inheritance**  
+Yes, with Kit you should access ancestors's methods and properties!
+- **Callbacks**  
+interact with Backbone's constructor, interact with all declared methods - _beforeMethod()_, _afterMethod()_  
+
+- **Declarative Events**  
+Do you know _events:{}_ object?  
+What do you think if you should code _modelEvents:{}_, _collectionEvents:{}_ and more?  
+
+- **Plugins Support**  
+adds and remove features on-the-fly from objects with plugins:  
+`sidebar.loadPlugin( bounceOnHover );`  
+
+- **Global Access to Components**  
+`Backbone.Kit.getView('sidebar').render()`
 
 ## Where to test it?
 
@@ -270,7 +284,6 @@ One plugin may be added to multiple objects.
 	// Use the object and plugin's methods
 	var myViewInstance = new myView();
 	myViewInstance.foo();
-
 
 
 
