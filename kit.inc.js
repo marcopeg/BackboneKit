@@ -720,7 +720,7 @@
 			// <------ beforeContruct()
 			// allow options pre-processing.
 			var evt = Backbone.Kit.callback( this, 'beforeConstruct', arguments );
-			if ( _.isObject(evt.results) ) options = evt.results;
+			if ( evt.hasResult() ) options = evt.results;
 			
 			
 			

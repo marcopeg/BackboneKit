@@ -34,6 +34,15 @@ It contains the latest versions of jQuery, Underscore, BackboneJS and BackboneKI
 
 
 
+## Callbacks
+
+Callback may be useful when extending components and want to add _pre_ or _post_ logic to a method.
+
+
+
+
+
+
 
 ## Inheritance
 
@@ -81,7 +90,7 @@ Each _type_ of LOTR characters may display different informations but all of the
 
 [jsFiddle for the above code](http://jsfiddle.net/mpeg/etKfb/)
 
-[>> Play with inheritance in this jsFiddle!](http://jsfiddle.net/mpeg/wU83C/)
+[>> Play with inheritance in this jsFiddle!](http://jsfiddle.net/mpeg/wU83C/)   
 In this jsFiddle I set up some LotR characters, Frodo, Gandalf, etc... some are *good characters* and someone else are *bad characters*...  
 Try to extend this example the way you want!
 
