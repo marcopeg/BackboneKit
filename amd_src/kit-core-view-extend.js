@@ -1,15 +1,9 @@
-define([
-	window.__backboneKitAmdBackbone, 
-	window.__backboneKitAmdUnderscore, 
-	window.__backboneKitAmdJQuery
-	
-],function( 
-	Backbone,
-	_, 
-	$
-	
-){
-	
+/**
+ * BackboneKit - BackboneJS View Extension
+ */
+
+// --- [[    R e q u i r e J S      A M D    ]] ---
+define([window.__backboneKitAmdBackbone,window.__backboneKitAmdUnderscore,window.__backboneKitAmdJQuery],function(Backbone,_,$){
 
 
 
@@ -18,79 +12,74 @@ define([
 
 
 
-/***************************************************************************************
-       OVERRIDES - Backbone.View.extend()
-       
-       - recursive options extension
-       - recursive plugins listing
-       - inheritance
-       
-***************************************************************************************/
+
+
+
+
+/********************************************************
+        BackboneKIT - Core View's extend() method logic
+        -----------------------------------------------
+        
+        This script implements inheritance behavior for views.
+        
+*********************************************************/
 ;(function($,_,Backbone){
 	
 	
-	var _extend = Backbone.View.extend;
+	Backbone.Kit.viewOriginalExtend = Backbone.View.extend;
 	
-	Backbone.View.extend = function( childProp ) {
+	Backbone.View.extend = function( protoProps, classProps ) {
+		
 		
 		
 		// Get prototype and new class's options out of the BackboneJS extension logic.
-		var protoOptions = _.clone(this.prototype.options) 	|| {};
-		var childOptions = _.clone(childProp.options) 		|| {};
+		var protoOptions 			= _.clone( Backbone.Kit.getValue( this.prototype, 		'options', {} ) );
+		var childOptions 			= _.clone( Backbone.Kit.getValue( protoProps, 			'options', {} ) );
 		
-		// Get mixins arrays from proto and child to be merged.
-		var protoMixins = _.clone(this.prototype.mixins);
-		var childMixins = _.clone(childProp.mixins);
+		// Get prototype and new class's attributes out of the BackboneJS extension logic.
+		var protoAttributes			= _.clone( Backbone.Kit.getValue( this.prototype, 		'attributes', {} ) );
+		var childAttributes 		= _.clone( Backbone.Kit.getValue( protoProps, 			'attributes', {} ) );
 		
 		// Get plugins arrays from proto and child to be merged.
-		var protoPlugins = _.clone(this.prototype.plugins);
-		var childPlugins = _.clone(childProp.plugins);
+		var protoPlugins 			= _.clone( Backbone.Kit.getValue( this.prototype, 		'plugins', [] ) );
+		var childPlugins 			= _.clone( Backbone.Kit.getValue( protoProps, 			'plugins', [] ) );
 		
 		// Get events from proto and child to be merged
-		var protoEvents 			= _.clone(this.prototype.events) || {};
-		var childEvents 			= _.clone(childProp.events) || {};
+		var protoEvents 			= _.clone( Backbone.Kit.getValue( this.prototype, 		'events', {} ) );
+		var childEvents 			= _.clone( Backbone.Kit.getValue( protoProps, 			'events', {} ) );
 		
-		var protoModelEvents 		= _.clone(this.prototype.modelEvents) || {};
-		var childModelEvents 		= _.clone(childProp.modelEvents) || {};
+		var protoModelEvents 		= _.clone( Backbone.Kit.getValue( this.prototype, 		'modelEvents', {} ) );
+		var childModelEvents 		= _.clone( Backbone.Kit.getValue( protoProps, 			'modelEvents', {} ) );
 		
-		var protoCollectionEvents 	= _.clone(this.prototype.collectionEvents) || {};
-		var childCollectionEvents 	= _.clone(childProp.collectionEvents) || {};
+		var protoCollectionEvents 	= _.clone( Backbone.Kit.getValue( this.prototype, 		'collectionEvents', {} ) );
+		var childCollectionEvents 	= _.clone( Backbone.Kit.getValue( protoProps, 			'collectionEvents', {} ) );
 		
-		var protoViewEvents 		= _.clone(this.prototype.viewEvents) || {};
-		var childViewEvents 		= _.clone(childProp.viewEvents) || {};
+		var protoViewEvents 		= _.clone( Backbone.Kit.getValue( this.prototype, 		'viewEvents', {} ) );
+		var childViewEvents 		= _.clone( Backbone.Kit.getValue( protoProps, 			'viewEvents', {} ) );
 		
-		var protoParentEvents 		= _.clone(this.prototype.parentEvents) || {};
-		var childParentEvents 		= _.clone(childProp.parentEvents) || {};
+		var protoParentEvents 		= _.clone( Backbone.Kit.getValue( this.prototype, 		'parentEvents', {} ) );
+		var childParentEvents 		= _.clone( Backbone.Kit.getValue( protoProps, 			'parentEvents', {} ) );
 		
-		
+		var protoMethods			= _.clone( Backbone.Kit.getValue( this.prototype, 		'_methods', [] ) );
+		var childMethods			= Backbone.Kit.getMethods( protoProps );
 		
 		
 		
 		// -- BackboneJS
 		// Default BackboneJS extends
-		var ex = _extend.apply( this, arguments );
+		var ex = Backbone.Kit.viewOriginalExtend.apply( this, arguments );
 		// -- BackboneJS
 		
 		
 		
 		
+		/**
+		 * Apply Merged Values
+		 */
 		
 		// Setup a merged options object to the new class.
-		ex.prototype.options = $.extend( true, {}, protoOptions, childOptions );
-		
-		
-		// Setup merged plugins array.
-		if ( protoMixins && childMixins ) {
-			
-			ex.prototype.mixins = protoMixins;
-			
-			_.each( childMixins, function( mixin ) {
-				
-				if ( _.indexOf( ex.prototype.mixins, mixin ) < 0 ) ex.prototype.mixins.push( mixin );
-				
-			});
-			
-		};
+		ex.prototype.options 		= $.extend( true, {}, protoOptions, 	childOptions );
+		ex.prototype.attributes 	= $.extend( true, {}, protoAttributes, 	childAttributes );
 		
 		
 		// Setup merged plugins array.
@@ -106,6 +95,19 @@ define([
 			
 		};
 		
+		
+		// Build child "_methods" list inheriting and extending parent's methods with new method names.
+		for ( var i in childMethods ) {
+			
+			if ( protoMethods.indexOf(childMethods[i]) < 0 ) {
+				
+				ex.prototype._methods.push( childMethods[i] );
+			
+			}
+			
+		}
+		
+		
 		// Attach merged declarative events
 		ex.prototype.events 				= $.extend( true, {}, protoEvents, 				childEvents );
 		ex.prototype.modelEvents 			= $.extend( true, {}, protoModelEvents, 		childModelEvents );
@@ -116,13 +118,14 @@ define([
 		
 		
 		
-
-
-
-
-
-
-
+		
+		
+		
+		
+		
+		
+		
+		
 /***************************************************************************************
        SUPER Emulation
        
@@ -205,6 +208,7 @@ define([
 				
 		};
 		
+		
 		ex.prototype.$apply = function() {
 			
 			_args = _.values( arguments );
@@ -237,11 +241,9 @@ define([
 				
 			}
 			
-			
-			
-			
 			// Fetch the "super" reference from the context or from the prototype.
 			var _super = this.__super || _.clone(this.constructor.prototype._super);
+			
 			
 			// Setup a "double super" reference into the context so parent's $super methods
 			// will use this as _super (before instruction)
@@ -268,23 +270,40 @@ define([
 			}
 			
 			// Delete the super-super link to allow next request!!!
-			delete( this.__parent );
+			delete( this.__super);
 			
 			return _return;
 			
 		};
 		
 		
+		
+		
+		
+		
+		
+		
+		
 		return ex;
+		
+	};
 	
-	// ---------------------------------------------------
-	}; // EndOf: View.extend() ---
-	// ---------------------------------------------------
-
-
-
+	
+	
+	
+	
 })($,_,Backbone);
-/************************[[    E X T E N D    ]]*************************************/
+/******* [[    C O R E    V I E W    E X T E N D    ]] ******/
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -293,3 +312,4 @@ define([
 
 
 });
+// --- [[    R e q u i r e J S      A M D    ]] ---

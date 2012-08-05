@@ -28,6 +28,11 @@ require.config({
 			deps: 	[ window.__backboneKitAmdJQuery, window.__backboneKitAmdUnderscore, window.__backboneKitAmdBackbone ]
 		},
 		
+		'kit-core-view-extend' : {
+			deps:	[ 'kit-core' ]
+		},
+		
+		/*
 		'kit-core-extend' : {
 			deps:	[ 'kit-core' ]
 		},
@@ -47,10 +52,11 @@ require.config({
 		'kit-core-plugin' : {
 			deps:	[ 'kit-core-declarative' ],
 		},
-		
+		*/
 		'kit-core-view' : {
-			deps:	[ 'kit-core-plugin' ]
+			deps:	[ 'kit-core-view-extend' ]
 		}
+		
 				
 	}
 	

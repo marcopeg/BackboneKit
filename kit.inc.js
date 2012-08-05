@@ -1,7 +1,5 @@
 
 
-// -- Global Name Wrapper --
-;(function($,_,Backbone) {
 
 
 
@@ -11,250 +9,461 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-/***************************************************************************************
-       BACKBONE CORE OBJECT
-       
-***************************************************************************************/
-	
-	_.extend( Backbone, {
-		
-		Kit: {
-			
-			// General Kit informations
-			version: 	'0.0.0',
-			author: 	'Marco Pegoraro - MPeg',
-			
-			// Mixin Archive
-			Mixin: {},
-			
-			// Plugins Archive
-			Plugin: {},
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-/***************************************************************************************
-       UI Components Collection and Accessors
-***************************************************************************************/
-			
-			_views: {},
-			
-			/**
-			 * Add a component to the store.
-			 */
-			addView: function( id, obj ) {
-				
-				Backbone.Kit._views[ id ] = obj;
-				
-			},
-			
-			
-			/**
-			 * Tryes to fetch required component by it's id
-			 */
-			getView: function( id ) {
-				
-				if ( _.has( Backbone.Kit._views, id) ) {
-					return Backbone.Kit._views[id];
-					
-				} 
-				
-				return false
-				
-			},
-			
-			/**
-			 * It only unset the reference to the element!
-			 * This is called by the Component's destroy() method!
-			 */
-			delView: function( id ) {
-				
-				if ( _.has( Backbone.Kit._views, id) ) {
-					
-					return delete Backbone.Kit._views[id];
-					
-				}
-				
-				return false;
-				
-			},
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			/**
-			 * Methods Extension Utility
-			 *
-			 * these functions can inject logic before and after the execution of a method.
-			 * if your custom logic return a non-null value this value is returned by the original method.
-			 *
-			 * if you "before logic" return a non-null value the original logic is skipped.
-			 */
-			
-			extendMethodBefore: function( _target, methodName, extensionLogic ) {
-				
-				if ( _.isUndefined(_target[methodName]) ) return;
-				
-				var methodLogic = _target[methodName];
-				
-				_target[methodName] = function() {
-					
-					var extensionResult = extensionLogic.apply( this, arguments );
-					
-					if ( extensionResult != null ) return extensionResult;
-					
-					return methodLogic.apply( this, arguments );
-						
-				};
-				
-			},
-			
-			extendMethodAfter: function( _target, methodName, extensionLogic ) {
-				
-				if ( _.isUndefined(_target[methodName]) ) return;
-				
-				var methodLogic = _target[methodName];
-				
-				_target[methodName] = function() {
-					
-					var originalResult = methodLogic.apply( this, arguments );
-					
-					var extensionResult = extensionLogic.apply( this, arguments );
-					
-					if ( extensionResult != null ) return extensionResult;
-					
-					return originalResult;
-						
-				};
-				
-			}
-			
-		}
-		
-	});
-	
-	
-	
-	
-	
-	
-	
-/***************************************************************************************
-       Exports "Kit" to the global namespace
-***************************************************************************************/
-	
-	window.Kit = Backbone.Kit;
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***************************************************************************************
-       OVERRIDES - Backbone.View.extend()
-       
-       - recursive options extension
-       - recursive plugins listing
-       - inheritance
-       
-***************************************************************************************/
+/********************************************************
+        BackboneKIT - Core Namespace Definition
+*********************************************************/
 ;(function($,_,Backbone){
 	
 	
-	var _extend = Backbone.View.extend;
 	
-	Backbone.View.extend = function( childProp ) {
+	
+	
+	/**
+	 * Fucking IE!!!
+	 * adds Array::indexOf() support to this sheetball browser!
+	 */
+	if (!Array.prototype.indexOf) {
+		Array.prototype.indexOf = function(obj, start) {
+			for (var i = (start || 0), j = this.length; i < j; i++) {
+				if (this[i] === obj) { return i; }
+			}
+			return -1;
+		}
+	}
+	
+	/**
+	 * String::capitalize()
+	 * capitalize first letter of a string.
+	 */
+	String.prototype.capitalize = function() {
+		return this.charAt(0).toUpperCase() + this.slice(1);
+	};
+	
+	/**
+	 * BackboneJS core (with default value!)
+	 * Helper function to get a value from a Backbone object as a property
+	 * or as a function.
+	 */
+	var getValue = function( object, prop, defaultValue ) {
+		
+		if (!(object && object[prop])) return defaultValue;
+		
+		return _.isFunction(object[prop]) ? object[prop]() : object[prop];
+		
+	};
+	
+	/**
+	 * Fetch all app-related methods from an object.
+	 */
+	var getMethods = function( object, _filter ) {
+		
+		// Reserved names
+		//_filter = _filter || [ '$', 'constructor', 'make', 'delegateEvents', 'undelegateEvents', 'on', 'off', 'trigger', 'bind', 'unbind', 'setElement' ];
+		_filter = _filter || [];
+		
+		
+		var methods 	= [];
+		
+		for ( var prop in object ) {
+			
+			// Skip reserved names and non-function properties
+			if ( 
+					prop.substring(0,6) === 'before' 
+				|| 	prop.substring(0,5) === 'after' 
+				|| 	prop.substring(0,1) === '_' 
+				||	_filter.indexOf(prop) >= 0
+				|| !_.isFunction(object[prop])
+			) continue;
+			
+			
+			methods.push( prop );
+			
+		};
+		
+		return methods;
+		
+	};
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * Callback Result Object
+	 * encapsulated utility class to handle response from a callback function
+	 */
+	
+	var CallbackResult = function() {
+			
+		var hasResult = function( prop ) {
+			
+			// test for general non-null returned value
+			if ( !prop ) return !( this.results === null || this.results === undefined );
+			
+			// test for a key in returned values
+			if ( !this.results ) return false;
+			if ( !this.results[prop] ) return false;
+			
+			return true;
+			
+		};
+		
+		var getResult = function( prop, defaultValue ) {
+			
+			if ( this.hasResult(prop) ) return this.results[prop];
+			
+			return defaultValue;
+			
+		};
+		
+		return {
+			
+			called: 	false,
+			results: 	null,
+			
+			hasResult:	hasResult,
+			getResult:	getResult
+			
+		}
+		
+	};
+
+	
+	/**
+	 * Generic Callback Utility
+	 * search given context for a method to execute
+	 */
+	var callback = function( object, name, args ) {
+		
+		// CallbackResult object will contain info about the callback execution
+		var evt = new CallbackResult();
+		
+		
+		// Execute the given callback
+		if ( _.isFunction(name) ) {
+			
+			evt.called		= true;
+			evt.results 	= name.apply( object, args );
+		
+		// Search for a callback and execute if exists	
+		} else if ( object[name] ) {
+				
+			evt.called		= true;
+			evt.results 	= object[name].apply( object, args );
+			
+		}
+		
+		// Return execution results
+		return evt;
+		
+	};
+	
+	/**
+	 * Sets up a before/after logic for all context related methods.
+	 * "_methods" property is computed every time a class is inherited from another!
+	 */
+	var applyCallbacks = function( object, args ) {
+		
+		_.each( object._methods, function( methodName ) {
+			
+			var method = object[methodName];
+			
+			object[methodName] = function() {
+				
+				// beforeEvent()
+				var beforeName = 'before'+methodName.capitalize();
+				
+				// Class beforeEvent()
+				var evt = Backbone.Kit.callback( this, beforeName, arguments );
+				if ( evt.hasResult('arguments') ) 	arguments = evt.getResult('arguments');
+				else if ( evt.hasResult('return') ) return evt.getResult('return');
+				else if ( evt.hasResult() )			return evt.results;
+				
+				// Plugins beforeEvent()
+				for ( var i=0; i<Backbone.Kit.store.LPlugin[object._id].length; i++ ) {
+					
+					var evt = Backbone.Kit.callback( this, Backbone.Kit.store.LPlugin[this._id][i][beforeName], arguments );
+					if ( evt.hasResult('arguments') ) 	arguments = evt.getResult('arguments');
+					else if ( evt.hasResult('return') ) return evt.getResult('return');
+					else if ( evt.hasResult() )			return evt.results;
+					
+				}
+				
+				
+				
+				// -- original method --
+				var _returnValue = method.apply( object, arguments );	
+				
+				
+				
+				// afterEvent()
+				var afterName = 'after'+methodName.capitalize();
+				
+				// Class afterEvent();
+				var evt = Backbone.Kit.callback( this, afterName, arguments );
+				if ( evt.hasResult('return') ) 	_returnValue = evt.getResult('return');
+				else if ( evt.hasResult() )		_returnValue = evt.results;
+				
+				// Plugins afterEvent()
+				for ( var i=0; i<Backbone.Kit.store.LPlugin[object._id].length; i++ ) {
+					
+					var evt = Backbone.Kit.callback( this, Backbone.Kit.store.LPlugin[this._id][i][afterName], arguments );
+					if ( evt.hasResult('return') ) 	_returnValue = evt.getResult('return');
+					else if ( evt.hasResult() )		_returnValue = evt.results;
+					
+				}
+				
+				
+				
+				return _returnValue;
+				
+			};
+			
+		});
+		
+	};
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * View Store Management Tools
+	 */
+	
+	var addView = function( view ) {
+		
+		Backbone.Kit.store.View[ view._id ] = view;
+		
+	};
+	
+	var getView = function( viewId ) {
+		
+		if ( _.has( Backbone.Kit.store.View, viewId ) ) {
+			
+			return Backbone.Kit.store.View[viewId];
+			
+		} 
+		
+		return false;
+		
+	};
+	
+	var delView = function( viewId ) {
+		
+		// Accept a view object as reference
+		if ( _.isObject(viewId) ) viewId = viewId._id;
+		
+		if ( _.has( Backbone.Kit.store.View, viewId ) ) {
+					
+			return delete Backbone.Kit.store.View[viewId];
+			
+		}
+		
+		return false;
+		
+	};
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * Backbone Namespace
+	 */
+	var Kit = function() {
+		
+		return {
+			
+			// Informations about BackboneKIT distribution
+			info: {
+			
+				// Info about BackboneKIT
+				version: 	'1.0.3',
+				git:		'https://github.com/movableapp/BackboneKit',
+				blog:		'http://movableapp.com',
+				
+				// Info about the autor
+				author: {
+					name:	'Marco Pegoraro',
+					mail:	'marco.pegoraro@gmail.com',
+					blog:	'http://movableapp.com'
+				},
+				
+				// Info about contributors
+				contributors: []
+			
+			},
+			
+			// Store collects objects lists
+			store: {
+				
+				// All instanciated views are listed here by ID or CID
+				View: {},
+				
+				// BackboneKIT's registered plugins goes here
+				Plugin: {},
+				
+				// Collects loaded plugins as named arrays:
+				// 'view0' : [ {}, {} ]
+				// 
+				// Load/Unload plugins stores informations here
+				LPlugin: {}
+				
+			},
+			
+			
+			// Utilities
+			getValue: 			getValue,
+			getMethods:			getMethods,
+			
+			// Generic callback triggering utility
+			callback: 			callback,
+			applyCallbacks: 	applyCallbacks,
+			
+			
+			
+			// View Store Management Tools
+			addView: addView,
+			getView: getView,
+			delView: delView,
+			
+			
+			// Private pass-through container.
+			_: {}			
+			
+		};
+		
+	};
+	
+	
+	// Extend BackboneJS adding the Kit namespace.
+	_.extend( Backbone, { Kit:Kit() });
+	
+	// Export BackboneKIT namespace to the global namespace for convenience.
+	window.Kit = Backbone.Kit;
+	
+	
+})($,_,Backbone);
+/******* [[    C O R E    N A M E S P A C E    ]] ******/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/********************************************************
+        BackboneKIT - Core View's extend() method logic
+        -----------------------------------------------
+        
+        This script implements inheritance behavior for views.
+        
+*********************************************************/
+;(function($,_,Backbone){
+	
+	
+	Backbone.Kit.viewOriginalExtend = Backbone.View.extend;
+	
+	Backbone.View.extend = function( protoProps, classProps ) {
+		
 		
 		
 		// Get prototype and new class's options out of the BackboneJS extension logic.
-		var protoOptions = _.clone(this.prototype.options) 	|| {};
-		var childOptions = _.clone(childProp.options) 		|| {};
+		var protoOptions 			= _.clone( Backbone.Kit.getValue( this.prototype, 		'options', {} ) );
+		var childOptions 			= _.clone( Backbone.Kit.getValue( protoProps, 			'options', {} ) );
 		
-		// Get mixins arrays from proto and child to be merged.
-		var protoMixins = _.clone(this.prototype.mixins);
-		var childMixins = _.clone(childProp.mixins);
+		// Get prototype and new class's attributes out of the BackboneJS extension logic.
+		var protoAttributes			= _.clone( Backbone.Kit.getValue( this.prototype, 		'attributes', {} ) );
+		var childAttributes 		= _.clone( Backbone.Kit.getValue( protoProps, 			'attributes', {} ) );
 		
 		// Get plugins arrays from proto and child to be merged.
-		var protoPlugins = _.clone(this.prototype.plugins);
-		var childPlugins = _.clone(childProp.plugins);
+		var protoPlugins 			= _.clone( Backbone.Kit.getValue( this.prototype, 		'plugins', [] ) );
+		var childPlugins 			= _.clone( Backbone.Kit.getValue( protoProps, 			'plugins', [] ) );
 		
 		// Get events from proto and child to be merged
-		var protoEvents 			= _.clone(this.prototype.events) || {};
-		var childEvents 			= _.clone(childProp.events) || {};
+		var protoEvents 			= _.clone( Backbone.Kit.getValue( this.prototype, 		'events', {} ) );
+		var childEvents 			= _.clone( Backbone.Kit.getValue( protoProps, 			'events', {} ) );
 		
-		var protoModelEvents 		= _.clone(this.prototype.modelEvents) || {};
-		var childModelEvents 		= _.clone(childProp.modelEvents) || {};
+		var protoModelEvents 		= _.clone( Backbone.Kit.getValue( this.prototype, 		'modelEvents', {} ) );
+		var childModelEvents 		= _.clone( Backbone.Kit.getValue( protoProps, 			'modelEvents', {} ) );
 		
-		var protoCollectionEvents 	= _.clone(this.prototype.collectionEvents) || {};
-		var childCollectionEvents 	= _.clone(childProp.collectionEvents) || {};
+		var protoCollectionEvents 	= _.clone( Backbone.Kit.getValue( this.prototype, 		'collectionEvents', {} ) );
+		var childCollectionEvents 	= _.clone( Backbone.Kit.getValue( protoProps, 			'collectionEvents', {} ) );
 		
-		var protoViewEvents 		= _.clone(this.prototype.viewEvents) || {};
-		var childViewEvents 		= _.clone(childProp.viewEvents) || {};
+		var protoViewEvents 		= _.clone( Backbone.Kit.getValue( this.prototype, 		'viewEvents', {} ) );
+		var childViewEvents 		= _.clone( Backbone.Kit.getValue( protoProps, 			'viewEvents', {} ) );
 		
-		var protoParentEvents 		= _.clone(this.prototype.parentEvents) || {};
-		var childParentEvents 		= _.clone(childProp.parentEvents) || {};
+		var protoParentEvents 		= _.clone( Backbone.Kit.getValue( this.prototype, 		'parentEvents', {} ) );
+		var childParentEvents 		= _.clone( Backbone.Kit.getValue( protoProps, 			'parentEvents', {} ) );
 		
-		
+		var protoMethods			= _.clone( Backbone.Kit.getValue( this.prototype, 		'_methods', [] ) );
+		var childMethods			= Backbone.Kit.getMethods( protoProps );
 		
 		
 		
 		// -- BackboneJS
 		// Default BackboneJS extends
-		var ex = _extend.apply( this, arguments );
+		var ex = Backbone.Kit.viewOriginalExtend.apply( this, arguments );
 		// -- BackboneJS
 		
 		
 		
 		
+		/**
+		 * Apply Merged Values
+		 */
 		
 		// Setup a merged options object to the new class.
-		ex.prototype.options = $.extend( true, {}, protoOptions, childOptions );
-		
-		
-		// Setup merged plugins array.
-		if ( protoMixins && childMixins ) {
-			
-			ex.prototype.mixins = protoMixins;
-			
-			_.each( childMixins, function( mixin ) {
-				
-				if ( _.indexOf( ex.prototype.mixins, mixin ) < 0 ) ex.prototype.mixins.push( mixin );
-				
-			});
-			
-		};
+		ex.prototype.options 		= $.extend( true, {}, protoOptions, 	childOptions );
+		ex.prototype.attributes 	= $.extend( true, {}, protoAttributes, 	childAttributes );
 		
 		
 		// Setup merged plugins array.
@@ -270,6 +479,19 @@
 			
 		};
 		
+		
+		// Build child "_methods" list inheriting and extending parent's methods with new method names.
+		for ( var i in childMethods ) {
+			
+			if ( protoMethods.indexOf(childMethods[i]) < 0 ) {
+				
+				ex.prototype._methods.push( childMethods[i] );
+			
+			}
+			
+		}
+		
+		
 		// Attach merged declarative events
 		ex.prototype.events 				= $.extend( true, {}, protoEvents, 				childEvents );
 		ex.prototype.modelEvents 			= $.extend( true, {}, protoModelEvents, 		childModelEvents );
@@ -280,13 +502,14 @@
 		
 		
 		
-
-
-
-
-
-
-
+		
+		
+		
+		
+		
+		
+		
+		
 /***************************************************************************************
        SUPER Emulation
        
@@ -369,6 +592,7 @@
 				
 		};
 		
+		
 		ex.prototype.$apply = function() {
 			
 			_args = _.values( arguments );
@@ -401,11 +625,9 @@
 				
 			}
 			
-			
-			
-			
 			// Fetch the "super" reference from the context or from the prototype.
 			var _super = this.__super || _.clone(this.constructor.prototype._super);
+			
 			
 			// Setup a "double super" reference into the context so parent's $super methods
 			// will use this as _super (before instruction)
@@ -432,169 +654,159 @@
 			}
 			
 			// Delete the super-super link to allow next request!!!
-			delete( this.__parent );
+			delete( this.__super);
 			
 			return _return;
 			
 		};
 		
 		
+		
+		
+		
+		
+		
+		
+		
 		return ex;
-	
-	// ---------------------------------------------------
-	}; // EndOf: View.extend() ---
-	// ---------------------------------------------------
-
-
-
-})($,_,Backbone);
-/************************[[    E X T E N D    ]]*************************************/
-
-
-
-
-
-
-
-
-
-
-/***************************************************************************************
-       MIXINS - View Code Injection
-       
-       Attach properties and new methods to a target view object.
-       Inject before and after logic to existing methods
-       
-       // Attach functionality on-the fly
-       myView.mixin({ foo:function(){ ... } })
-       
-       // Attach a plugin by name
-       myView.mixin( 'myPlugin' )
-       ( 'myPlugin' is requested as 'Backbone.Kit.Plugin.myPlugin' )
-       
-***************************************************************************************/
-;(function($,_,Backbone){
-
-	Backbone.View.mixin = function( _mixin ) {
-		
-		// Loads mixin by name from the Kit Mixin repository.
-		if ( _.isString(_mixin) ) _mixin = Backbone.Kit.Mixin[_mixin];
-		
-		// protect from undefined mixin request.
-		if ( !_mixin ) return this;
-		
-		// protect from undefined target
-		var _self = this.prototype;
-		if ( !_self ) return this;
-		
-		
-		
-		
-		// Extract the before/after kays from the mixin configuration.
-		// Then remove it from the mixin configuration to prevent propagation in the target object
-		var _before = _mixin.before 	|| {};			if ( _mixin.before ) 	delete _mixin['before'];
-		var _after	= _mixin.after 	|| {};				if ( _mixin.after ) 	delete _mixin['after'];
-		
-		
-		
-		
-		// Apply missing properties and methods.
-		_.defaults( _self, _mixin );
-		
-		// Apply missing properties to the attribute property.
-		_.defaults( _self.attributes		|| {}, 		_mixin.attributes 			|| {} );
-		
-		// Apply missing event handlers.
-		_.defaults( _self.events			|| {}, 		_mixin.events 				|| {} );
-		_.defaults( _self.viewEvents 		|| {}, 		_mixin.viewEvents 			|| {} );
-		_.defaults( _self.parentEvents 		|| {}, 		_mixin.parentEvents 		|| {} );
-		_.defaults( _self.modelEvents 		|| {}, 		_mixin.modelEvents 			|| {} );
-		_.defaults( _self.collectionEvents 	|| {}, 		_mixin.collectionEvents 	|| {} );
-		
-		
-		
-		// Inject before / after logic
-		_.each( _before, function( method, name ) {
-			
-			Backbone.Kit.extendMethodBefore( _self, name, method );
-			
-		});
-		
-		_.each( _after, function( method, name ) {
-			
-			Backbone.Kit.extendMethodAfter( _self, name, method );
-			
-		});
-		
-		
-		// return class definition object
-		return this;
 		
 	};
 	
 	
-	/**
-	 * Attach multiple mixins passed as array.
-	 * 
-	 * If no mixins are found it check into the prototype mixins configuration param to
-	 * loads all configured mixins.
-	 */
-	Backbone.View.attachMixins = function( mixins ) {
+	
+	
+	
+})($,_,Backbone);
+/******* [[    C O R E    V I E W    E X T E N D    ]] ******/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/********************************************************
+        VIEW EXTENSION
+*********************************************************/
+;(function($,_,Backbone){
+	
+	// Fetch a reference to the original Backbone.View object
+	var _view 	= Backbone.View;
+	var _proto 	= _view.prototype;
+	
+	
+	
+	
+	// BackboneKIT View Object
+	var KitView = function() {
 		
-		// Fallback to the configured mixins list
-		if ( !mixins ) {
+		
+		
+		/**
+		 *  -- VIEW CONSTRUCTOR --
+		 * This is a complete refactor of the Backbone View's constructor logi.
+		 * It uses all original logic but add some 
+		 */
+		var constructor = function( options ) {
 			
-			if ( !this.prototype || !this.prototype.mixins || !_.isArray(this.prototype.mixins) ) return;
+			// <------ beforeContruct()
+			// allow options pre-processing.
+			var evt = Backbone.Kit.callback( this, 'beforeConstruct', arguments );
+			if ( _.isObject(evt.results) ) options = evt.results;
 			
-			mixins = this.prototype.mixins;	
+			
+			
+			
+			// >> BACKBONE <<
+			this.cid = _.uniqueId('view');
+			this._configure(options || {});
+			
+			
+			
+			// KIT-ID
+			// Each view is provided with a global-unique _id property.
+			// You can configure this property inside objects and instances options.
+			// View's DOM node will be added by a "kit-id" property to expose the id.
+			
+			// Enforce the ID structure to optimize for the global view store.
+			if ( !this._id && this.options._id ) this._id = this.options._id;
+			if ( !this._id ) this._id = this.id || this.cid;
+			// TODO: check for global existance!
+			
+			// Setup the "data-view-id" for the DOM node to store reference with the global views store.
+			this.attributes = Backbone.Kit.getValue( this, 'attributes', {} );
+			if ( !this.attributes['kit-idd'] ) this.attributes['kit-id'] = this._id;
+			
+			
+			
+			// <------ afterConfigure()
+			Backbone.Kit.callback( this, 'afterConfigure', arguments );
+			
+			
+			
+			
+			// >> BACKBONE <<
+			this._ensureElement();
+			
+			// KIT-ID >> Check for "kit-id" existance then set it up
+			if ( !this.$el.attr('kit-id') ) this.$el.attr( 'kit-id', this._id );
+			
+			// Parent View Relation
+			if ( this.options.parent ) this.setParent( this.options.parent );
+			
+			
+			// Load associated plugins but not it's events
+			// plugin's events are associated AFTER callbacks and instance's declarative events
+			Backbone.Kit.store.LPlugin[this._id] = [];
+			this.loadPlugins( null, false );
+			
+			
+			// Apply before/after callbacks for all metods found inside the object.
+			Backbone.Kit.applyCallbacks( this, arguments );
+			
+			
+			
+			
+			// >> BACKBONE <<
+			this.initialize.apply(this, arguments);
+			this.delegateEvents();
+			
+			// Bind Declarative Events
+			this.bindModelEvents();
+			this.bindCollectionEvents();
+			this.bindViewEvents();
+			this.bindParentEvents();
+			
+			
+			// Associate plugins events when all callbacks are configured.
+			this.loadPluginsEvents();
+			
+			
+			// Add the view to the global views store.
+			Backbone.Kit.addView( this );
+			
+			
+			
+			
+			// <------ afterContruct()
+			// allow post-processing logics
+			Backbone.Kit.callback( this, 'afterConstruct', arguments );
+
 			
 		};
 		
 		
-		// Loads Mixins
-		_.each( mixins, function( mixin ) {
-			
-			this.mixin( mixin );
-			
-		}, this);
 		
 		
-	};
-
-
-	
-	
-
-
-
-
-
-
-
-
-/***************************************************************************************
-       CONFIGURABLE MIXINS
-       
-       Loads every mixin as defined into the "mixins" array.
-       
-***************************************************************************************/
 		
-	var _View = Backbone.View;
-	
-	Backbone.View = _View.extend({
-		
-		_ensureElement: function() {
-			
-			_View.prototype._ensureElement.apply( this, arguments );	
-			
-			this.constructor.attachMixins();
-			
-		}
-		
-	});
-	
-})($,_,Backbone);
-/******************************** [[ M I X I N S ]] ***********************************/
 
 
 
@@ -607,157 +819,52 @@
 
 
 
-
-
-
-
-
-/***************************************************************************************
-       GLOBAL VIEW COLLECTION
-       
-       Creates a "viewID" property for the instance then adds the view object to the
-       global Backbone.Kit collection.
-       
-       This way every View instance can be globally accessed with:
-       Backbone.Kit.getView('viewID')
-       
-       viewID should be the view.id or view.cid.
-       
-***************************************************************************************/
-;(function($,_,Backbone){
-	
-	
-	
-	var _View = Backbone.View;
-	
-	Backbone.View = _View.extend({
-		
-		_ensureElement: function() {
-			
-			_View.prototype._ensureElement.apply( this, arguments );	
-			
-			this.viewID = this.$el.attr('id') || this.id || this.cid ;
-			
-			Backbone.Kit.addView( this.viewID, this );
-			
-			// Setup DOM attributes
-			this.attributes = this.attributes || {};
-			this.attributes['data-view-id'] = this.viewID;
-			
-			
-			// Fill item's attributes as defined into the View's object
-			_.each( this.attributes, function( val, key ) {
-				
-				this.$el.attr( key, val );
-				
-			}, this );
-						
-		},
-
-		
+/************************************************************************************
+        PARENT RELATION
+************************************************************************************/		
 		
 		/**
-		 * Shortcut for the Backbone.Kit.getView()
+		 * Parent Relation Setter
+		 * ToDo:
+		 * - check for parent to be derived from a view item.
+		 * - check for prevent parent to be chidlren (prevent loops)
 		 */
-		
-		get: function( id ) {
+		var setParent = function( parent ) {
 			
-			return Backbone.Kit.getView( id );
+			this.parent = parent;
 			
-		}		
-				
-		
-	});
-	
-	
-	
-	
-	
-})($,_,Backbone);
-/****************[[    G L O B A L     V I E W     C O L L E C T I O N    ]]************************/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		
-/***************************************************************************************
-       DECLARATIVE EVENTS
-       
-       Based upon the great GIT:
-       https://github.com/Codecademy/backbone.declarative
-       
-       It allow to define:
-       - viewEvents
-       - parentEvents
-       - modelEvents
-       - collectionEvents
-       
-***************************************************************************************/
-;(function($,_,Backbone){	
-
-	
-	// Helper function to get a value from a Backbone object as a property
-	// or as a function.
-	var getValue = function(object, prop) { 
-		
-		if (!(object && object[prop])) return null;
-		
-		return _.isFunction(object[prop]) ? object[prop]() : object[prop];
-		
-	};
-	
-	var _View = Backbone.View;
-	
-	// Declarative events map.
-	var viewMethods = {
-		model: 			{},
-		collection: 	{},
-		view: 			{},
-		parent:			{}
-	};
-	
-	
-	
-	Backbone.View = _View.extend({
-		
-		constructor: function () {
+			return this;
 			
-			_View.apply(this, Array.prototype.slice.call(arguments));
-			
-			this.bindModelEvents();
-			
-			this.bindCollectionEvents();
-			
-			this.bindViewEvents();
-			
-			this.bindParentEvents();
-	
-		},
+		};
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/************************************************************************************
+        DECLARATIVE EVENTS
+************************************************************************************/
+		
+		// Declarative events map.
+		var viewMethods = {
+			model: 			{},
+			collection: 	{},
+			view: 			{},
+			parent:			{}
+		};
 		
 		
-		_bindDeclarativeEvents: function (prop, events, cid ) {
+		var _bindDeclarativeEvents = function ( prop, events, cid ) {
 			
 			cid = cid || this.cid;
 			
@@ -787,9 +894,9 @@
 				
 			}
 			
-		},
+		};
 	
-		_unbindDeclarativeEvents: function( prop, cid ) {
+		var _unbindDeclarativeEvents = function( prop, cid ) {
 		
 			cid = cid || this.cid;
 			
@@ -811,63 +918,59 @@
 			
 			delete viewMethods[prop][cid];
 			
-		},
-	
-		bindModelEvents: function (modelEvents) {
+		};
+		
+		
+		
+		
+		var bindModelEvents = function (modelEvents) {
 			
 			if ( !this.model ) return;
 			
-			if (!(modelEvents || (modelEvents = getValue(this, 'modelEvents')))) return;
+			if (!(modelEvents || (modelEvents = Backbone.Kit.getValue(this, 'modelEvents')))) return;
 			
 			this.unbindModelEvents();
 			
-			this._bindDeclarativeEvents('model', modelEvents);
+			_bindDeclarativeEvents.call( this, 'model', modelEvents );
 			
-		},
+		};
 		
-		bindCollectionEvents: function (collectionEvents) {
+		var bindCollectionEvents = function (collectionEvents) {
 			
 			if ( !this.collection ) return;
 			
-			if (!(collectionEvents || (collectionEvents = getValue(this, 'collectionEvents')))) return;
+			if (!(collectionEvents || (collectionEvents = Backbone.Kit.getValue(this, 'collectionEvents')))) return;
 			
 			this.unbindCollectionEvents();
 			
-			this._bindDeclarativeEvents('collection', collectionEvents);
+			_bindDeclarativeEvents.call( this, 'collection', collectionEvents );
 			
-		},
+		};
 		
-		bindViewEvents: function( viewEvents ) {
+		var bindViewEvents = function( viewEvents ) {
 			
-			if (!(viewEvents || (viewEvents = getValue(this, 'viewEvents')))) return;
+			if (!(viewEvents || (viewEvents = Backbone.Kit.getValue(this, 'viewEvents')))) return;
 			
 			this.unbindViewEvents();
-			this._bindDeclarativeEvents('view', viewEvents);
+			_bindDeclarativeEvents.call( this, 'view', viewEvents );
 			
 			
-		},
+		};
 		
-		bindParentEvents: function( parentEvents ) {
+		var bindParentEvents = function( parentEvents ) {
 			
-			if (!(parentEvents || (parentEvents = getValue(this, 'parentEvents')))) return;
+			if (!(parentEvents || (parentEvents = Backbone.Kit.getValue(this, 'parentEvents')))) return;
 			
 			this.unbindParentEvents();
-			this._bindDeclarativeEvents('parent', parentEvents);
 			
+			if ( this.parent ) _bindDeclarativeEvents.call( this, 'parent', parentEvents );
 			
-		},
+		};
 		
-		unbindModelEvents: 			function() { this._unbindDeclarativeEvents('model') },
-		unbindCollectionEvents: 	function() { this._unbindDeclarativeEvents('collection') },
-		unbindViewEvents: 			function() { this._unbindDeclarativeEvents('view') },
-		unbindParentEvents: 		function() { this._unbindDeclarativeEvents('parent') }
-		
-
-	});
-
-
-})($,_,Backbone);
-/***********************[[   D E C L A R A T I V E       E V E N T S    ]]*************************/
+		var unbindModelEvents			= function() { _unbindDeclarativeEvents.call( this, 'model' ) };
+		var unbindCollectionEvents		= function() { _unbindDeclarativeEvents.call( this, 'collection' ) };
+		var unbindViewEvents			= function() { _unbindDeclarativeEvents.call( this, 'view' ) };
+		var unbindParentEvents			= function() { _unbindDeclarativeEvents.call( this, 'parent' ) };
 
 
 
@@ -881,413 +984,281 @@
 
 
 
-/**************************************************************************************
-       CONFIGURABLE PLUGINS
-       
-       Loads every plugins as defined into the "plugins" array.
-       
-***************************************************************************************/
-;(function($,_,Backbone){
-	
-	
-	var _View = Backbone.View;
 
-	Backbone.View = _View.extend({
-		
-		
-		/**
-		 * Ensure Extension Method
-		 * loads internal logic to extend Backbone.View capabilities
-		 */
-		_ensureElement: function() {
+/************************************************************************************
+        PLUGIN SUPPORT
+************************************************************************************/
+
+		var loadPlugin = function( plugin, loadEvents ) {
 			
-			_View.prototype._ensureElement.apply( this, arguments );
+			// Plugin's events are loaded by default.
+			// you can prevent to load events by pass "false" as second param.
+			if ( loadEvents !== false ) loadEvents = true;
 			
-			this.loadPlugins();
+			// ToDo: fetch plugin from the Kit.store.Plugin by name
+			if ( _.isString(plugin) ) return;
 			
-		},
-		
-		
-		
-		
-		
-		
-		
-		
-		/**
-		 * Utilities to load/unload multiple plugins at once
-		 */
-		
-		loadPlugins: function( plugins ) {
+			// Eval a plugin into closure funciton
+			if ( _.isFunction(plugin) ) plugin = plugin.apply( this );
 			
-			plugins = plugins || this.plugins;
-			
-			_.each( plugins, this.loadPlugin, this );
-			
-		},
-		
-		// Unload revert the plugin order to start unloading the last loaded plugin!
-		unloadPlugins: function( plugins ) {
-			
-			plugins = plugins || this.plugins;
-			
-			_.each( plugins.reverse(), this.unloadPlugin, this );
-			
-		},
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		/**
-		 * Loads a plugin into the instance.
-		 * -- different types of properties are handled in different ways! --
-		 */
-		
-		loadPlugin: function( plugin ) {
-			
+			// Apply default values to the plugin
 			plugin._ = {
+				
+				// plugin internal callbacks
+				initialize: null,
+				
 				reserved: {
-					literals: 		[ '_', 'before', 'after', 'events', 'viewEvents' ],
+					literals: 		[ '_', 'before', 'after', 'events', 'modelEvents', 'collectionEvents', 'viewEvents', 'parentEvents' ],
 					properties:		[ 'cid' ]
 				},
 				
 				// Will store a list of added literals and properties to remove at unloading time.
 				added: {
 					literals:		[],
-					properties:		[]
-				},
-				
-				// Will store original methods when extending with "before" and "after" keys.
-				// This informations helps to restore original target status when unload plugins.
-				befored: {},
-				aftered: {}
+					properties:		[],
+					methods:		[]
+				}
 				
 			};
 			
+			// Skip already loaded plugins
+			if ( this.loadedPlugins.indexOf(plugin) >= 0 ) return;
 			
 			
-			// Compose the plugin's ID
+			
+			// Compose the plugin's uniqueID.
+			// this information is used when unloading the plugin.
 			if ( !plugin.cid ) plugin.cid = this.cid + _.uniqueId('plugin');
-			//console.log( 'loadPlugin: ' + plugin.cid );
+			
+			
+			// Export the plugin's initialization logic to prevent to mixin into the
+			// targer object.
+			// "plugin::initialize()" will be executed 
+			if ( plugin['initialize'] ) {
+				
+				plugin._.initialize = plugin['initialize'];
+				
+				delete( plugin['initialize'] );
+				
+			}
 			
 			
 			
-			// Extend target object with methods, literals and properties defined into the plugin
-			_.each( plugin, function( val, prop ) {
+			/**
+			 * Merge plugin's attributes to the target object.
+			 */
+			for ( var prop in plugin ) {
 				
-				// before/after method code injection
-				if ( prop === 'before' ) {
+				// -----
+				// Add plugin's methods to the target object:
+				if (
+					_.isFunction(plugin[prop]) 
+					&& !this[prop]
+					&& prop.substring(0,6) !== 'before'
+					&& prop.substring(0,5) !== 'after'
+				) {
 					
-					_.each( val, function( logic, name ){
-						
-						Backbone.Kit.extendMethodBefore( this, name, logic );
-						
-						
-					}, this);
-					
-				} else if ( prop === 'after' ) {
-				
-					_.each( val, function( logic, name ){
-						
-						Backbone.Kit.extendMethodAfter( this, name, logic );
-						
-					}, this);
-					
-					
-					
-				// Methods
-				} else if ( _.isFunction(val) ) {
-					__loadPluginMethod.call( this, prop, val );
+					// Add method to the targer object and append a reference to the plugin info
+					// internal reference is need when removing the plugin
+					this[prop] = plugin[prop];
+					plugin._.added.methods.push( prop );
 				
 				
-				// Literal Objects
-				// {}
-				} else if ( _.isObject(val) ) {
+				
+				// -----
+				// Add literals or merge existing ones:
+				} else if (
+					!_.isFunction(plugin[prop])
+					&& _.isObject(plugin[prop])
+					&& plugin._.reserved.literals.indexOf(prop) < 0
+				) {
 					
-					// skip reserved literals
-					if ( plugin._.reserved.literals.indexOf(prop) >= 0 ) return;
-					
-					// Set defaults to an existing literal
-					if ( this[prop] ) {
-						_.defaults( this[prop], val );
-					
-					// Add a non-existing literal
-					} else {
-						this[prop] = val;
+					// Literal does no exists in original object.
+					// Add it and save a reference for removing when unload the plugin.
+					if ( !this[prop] ) {
+						
+						this[prop] = plugin[prop];
 						plugin._.added.literals.push(prop);
+					
+					// Literal exists in the original object.
+					// Apply plugin's literal as default to the target object.	
+					} else {
+						
+						_.defaults( this[prop], plugin[prop] );
 						
 					}
 				
-				// Generic Properties
-				} else {
+				// -----
+				// Add non existing properties:
+				} else if (
+					!this[prop]
+					&& !_.isFunction(plugin[prop])
+					&& !_.isObject(plugin[prop])
+					&& plugin._.reserved.properties.indexOf(prop) < 0
+				) {
 					
-					// skip reserved properties!
-					if ( plugin._.reserved.properties.indexOf(prop) >= 0 ) return;
-					
-					// skip existing properies
-					if ( this[prop] ) return;
-					
-					this[prop] = val;
+					this[prop] = plugin[prop];
 					plugin._.added.properties.push(prop);
 					
 				}
 				
-			}, this);
-			
-			// Load plugin's events:
-			__loadPluginEvents.call( this, plugin );
-			
-		},
-		
-		
-		
-		
-		
-		
-		
-		/**
-		 * Unloads a plugin from the instance.
-		 * try to remove plugin's footprint where it is possible.
-		 */
-		
-		unloadPlugin: function( plugin ) {
-			
-			//console.log( "unloadPlugin: " + plugin.cid );
-			
-			// Extend target object with methods, literals and properties defined into the plugin
-			_.each( plugin, function( val, prop ) {
-				
-				// remove before/after code injection.
-				// BUG: after this "delete" action loadPlugin() is not able to load injections another time!
-				if ( prop === 'before' ) {
-					
-					_.each( val, function( logic, name ){
-						
-						delete( this[name] );
-						
-					}, this);
-					
-				} else if ( prop === 'after' ) {
-				
-					_.each( val, function( logic, name ){
-						
-						delete( this[name] );
-						
-					}, this);
-					
-					
-					
-				// Methods
-				} else if ( _.isFunction(val) ) {
-					__unloadPluginMethod.call( this, prop, val );
-				
-				
-				// Literal Objects
-				// {}
-				} else if ( _.isObject(val) ) {
-					
-					// skip already undefined properies
-					if ( !this[prop] ) return;
-					
-					// skip reserved literals
-					if ( plugin._.reserved.literals.indexOf(prop) >= 0 ) return;
-					
-					// remove this property only if was added by the plugin!
-					if ( plugin._.added.literals.indexOf(prop) >= 0 ) delete( this[prop] );
-				
-				// Generic Properties
-				} else {
-					
-					// skip already undefined properies
-					if ( !this[prop] ) return;
-					
-					// skip reserved properties!
-					if ( plugin._.reserved.properties.indexOf(prop) >= 0 ) return;
-					
-					// remove this property only if was added by the plugin!
-					if ( plugin._.added.properties.indexOf(prop) >= 0 ) delete( this[prop] );
-					
-				}
-				
-			}, this);
+			}
 			
 			
-			// Unload plugin's DOM Events:
-			__unloadPluginEvents.call( this, plugin );
-			
-			this.delegateEvents();
-			
-		}
-		
-		
-	});
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	/**
-	 * Internal Logics
-	 */
-	
-	
-	var __loadPluginMethod = function( prop, val ) {
-				
-		if ( !_.isUndefined(this[prop]) ) return;
-		
-		this[prop] = val;
-		
-	};
-	
-	
-	var __loadPluginEvents = function( plugin ) {
-				
-		__unloadPluginEvents.call( this, plugin );
-		
-		// DOM Events
-		if ( plugin.events && !_.isEmpty(plugin.events) ) {
-			
-			var delegateEventSplitter = /^(\S+)\s*(.*)$/;
-			
-			// -- from backbone's delegateEvents
-			events = plugin.events;
-			for (var key in events) {
-		        var method = events[key];
-		        if (!_.isFunction(method)) method = this[events[key]];
-		        if (!method) throw new Error('Method "' + events[key] + '" does not exist');
-		        var match = key.match(delegateEventSplitter);
-		        var eventName = match[1], selector = match[2];
-		        method = _.bind(method, this);
-		        eventName += '.delegateEvents' + plugin.cid; // !!!! "plugin.cid" is important !!!!
-		        if (selector === '') {
-		          this.$el.bind(eventName, method);
-		        } else {
-		          this.$el.delegate(selector, eventName, method);
-		        }
-		      }
-		    // -- from backbone's delegateEvents
-	    
-	    };
-	    
-	    
-	    // Declarative Events
-	    this._bindDeclarativeEvents('model', 		plugin.modelEvents 			|| {}, plugin.cid );
-		this._bindDeclarativeEvents('collection', 	plugin.collectionEvents 	|| {}, plugin.cid );
-		this._bindDeclarativeEvents('view', 		plugin.viewEvents 			|| {}, plugin.cid );
-		this._bindDeclarativeEvents('parent', 		plugin.parentEvents 		|| {}, plugin.cid );
-		
-	};
-	
-	
-	var __unloadPluginMethod = function( prop, val ) {
-				
-		if ( _.isUndefined(this[prop]) ) return;
-		
-		if ( !_.isEqual( this[prop], val ) ) return;
-		
-		delete( this[prop] );
-		
-	};
-	
-	var __unloadPluginEvents = function( plugin ) {
-		
-		// DOM Events
-		this.$el.unbind('.delegateEvents' + plugin.cid);
-		
-		// Declarative Events
-	    this._unbindDeclarativeEvents('model', 			plugin.cid );
-		this._unbindDeclarativeEvents('collection', 	plugin.cid );
-		this._unbindDeclarativeEvents('view', 			plugin.cid );
-		this._unbindDeclarativeEvents('parent', 		plugin.cid );
-		
-	};
-	
-
-
-})($,_,Backbone);
-/*******************[ C O N F I G U R A B L E      P L U G I N S ] ****************************/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***************************************************************************************
-       CORE VIEW EXTENSION
-       
-***************************************************************************************/
-
-
-;(function($,_,Backbone){
-
-	var _View = Backbone.View;
-	
-	Backbone.View = _View.extend({
-		
-		
-		/**
-		 * Ensure Extension Method
-		 * loads internal logic to extend Backbone.View capabilities
-		 */
-		_ensureElement: function() {
-			
-			_View.prototype._ensureElement.apply( this, arguments );	
+			// Load plugin's events if required.
+			if ( loadEvents ) loadPluginEvents.call( this, plugin );
 			
 			
-			// View Parent Relations
-			if ( this.options.parent ) this.setParent( this.options.parent );
+			// Add a reference to the loaded plugins list inside the target object.
+			Backbone.Kit.store.LPlugin[this._id].push( plugin ); 
 			
-			
-		},
-
-		
-		/**
-		 * Utility for setting the parent view.
-		 */
-		setParent: function( parent ) {
-			
-			this.parent = parent;
-			
-			this.bindParentEvents();
+			// Run the plugin's initialize logic.
+			if ( _.isFunction(plugin._.initialize) ) plugin._.initialize.call( this, plugin );
 			
 			return this;
 			
-		},
+		};
 		
+		
+		var loadPluginEvents = function( plugin ) {
+			
+			unloadPluginEvents.call( this, plugin );
+			
+			// DOM Events
+			if ( plugin.events && !_.isEmpty(plugin.events) ) {
+				
+				var delegateEventSplitter = /^(\S+)\s*(.*)$/;
+				
+				// -- from backbone's delegateEvents
+				events = plugin.events;
+				for (var key in events) {
+			        var method = events[key];
+			        if (!_.isFunction(method)) method = this[events[key]];
+			        if (!method) throw new Error('Method "' + events[key] + '" does not exist');
+			        var match = key.match(delegateEventSplitter);
+			        var eventName = match[1], selector = match[2];
+			        method = _.bind(method, this);
+			        eventName += '.delegateEvents' + plugin.cid; // !!!! "plugin.cid" is important !!!!
+			        if (selector === '') {
+			          this.$el.bind(eventName, method);
+			        } else {
+			          this.$el.delegate(selector, eventName, method);
+			        }
+			      }
+			    // -- from backbone's delegateEvents
+		    
+		    };
+			
+			// Declarative Events:
+			_bindDeclarativeEvents.call( this, 'model', 		plugin.modelEvents 			|| {}, plugin.cid );
+			_bindDeclarativeEvents.call( this, 'collection', 	plugin.collectionEvents 	|| {}, plugin.cid );
+			_bindDeclarativeEvents.call( this, 'view', 			plugin.viewEvents 			|| {}, plugin.cid );
+			_bindDeclarativeEvents.call( this, 'parent', 		plugin.parentEvents 		|| {}, plugin.cid );
+			
+			return this;
+			
+		};
+		
+		var unloadPluginEvents = function( plugin ) {
+			
+			// DOM Events: 
+			this.$el.unbind('.delegateEvents' + plugin.cid);
+			
+			// Declarative Events:
+			_unbindDeclarativeEvents.call( this,		'model', 			plugin.cid );
+			_unbindDeclarativeEvents.call( this,		'collection', 		plugin.cid );
+			_unbindDeclarativeEvents.call( this,		'view', 			plugin.cid );
+			_unbindDeclarativeEvents.call( this,		'parent', 			plugin.cid );
+			
+			return this;
+				
+		};
+		
+		
+		
+		/**
+		 * Try to remove a plugin footprint from the target object.
+		 */
+		var unloadPlugin = function( plugin ) {
+			
+			// Remove added methods:
+			for ( var i=0; i<plugin._.added.methods.length; i++ ) delete this[plugin._.added.methods[i]];
+			
+			// Remove added literals:
+			for ( var i=0; i<plugin._.added.literals.length; i++ ) delete this[plugin._.added.literals[i]];
+			
+			// Remove added properties:
+			for ( var i=0; i<plugin._.added.properties.length; i++ ) delete this[plugin._.added.properties[i]];
+			
+			// Remove the reference from the loaded plugins list
+			var _plugins = []
+			
+			// Unload plugin events:
+			unloadPluginEvents.call( this, plugin );			
+			
+			// Remove the plugin from the Kit LPlugin store:
+			for ( var i=0; i<Backbone.Kit.store.LPlugin[this._id].length; i++ ) {
+				
+				if ( Backbone.Kit.store.LPlugin[this._id][i] !== plugin ) _plugins.push(Backbone.Kit.store.LPlugin[this._id][i]);
+				
+			}
+			
+			Backbone.Kit.store.LPlugin[this._id] = _plugins;
+			
+			return this;
+			
+		};
+		
+		
+		
+		
+		
+		/**
+		 * Mass load/unloads
+		 */
+		
+		var loadPlugins = function( plugins, loadEvents ) {
+			
+			plugins = plugins || this.plugins;
+			
+			for ( var i=0; i<plugins.length; i++ ) this.loadPlugin( plugins[i], loadEvents );
+			
+		};
+		
+		var loadPluginsEvents = function( plugins ) {
+			
+			if ( !plugins ) {
+				plugins = plugins || Backbone.Kit.store.LPlugin[this._id];
+			}
+			
+			for ( var i=0; i<plugins.length; i++ ) this.loadPluginEvents( plugins[i] );
+			
+		};
+		
+		var unloadPlugins = function( plugins ) {
+			
+			if ( !plugins ) {
+				plugins = plugins || Backbone.Kit.store.LPlugin[this._id].reverse();
+			}
+			
+			for ( var i=0; i<plugins.length; i++ ) this.unloadPlugin( plugins[i] );
+			
+		};
 
-
-
-
-
-
-
-
-
-
-/***************************************************************************************
-       RENDERING FACILITIES
-***************************************************************************************/	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+/************************************************************************************
+        RENDERING UTILITIES
+************************************************************************************/
+		
 		
 		/**
 		 * renderTo( target, p1, p2, ... )
@@ -1296,7 +1267,7 @@
 		 * First argument must be a DOM reference.
 		 * Oter arguments will be sent to this.render() method
 		 */
-		renderTo: function() {
+		var renderTo = function() {
 			
 			arguments = _.values( arguments );
 			
@@ -1311,7 +1282,7 @@
 			
 			return this;
 			
-		},
+		};
 		
 		/**
 		 * renderAfter( target, p1, p2, ... )
@@ -1320,7 +1291,7 @@
 		 * First argument must be a DOM reference.
 		 * Oter arguments will be sent to this.render() method
 		 */
-		renderAfter: function() {
+		var renderAfter = function() {
 			
 			arguments = _.values( arguments );
 			
@@ -1335,7 +1306,7 @@
 			
 			return this;
 			
-		},
+		};
 		
 		/**
 		 * renderBefore( target, p1, p2, ... )
@@ -1344,7 +1315,7 @@
 		 * First argument must be a DOM reference.
 		 * Oter arguments will be sent to this.render() method
 		 */
-		renderBefore: function() {
+		var renderBefore = function() {
 			
 			arguments = _.values( arguments );
 			
@@ -1359,7 +1330,7 @@
 			
 			return this;
 			
-		},
+		};
 		
 		/**
 		 * appendTo( target, p1, p2, ... )
@@ -1367,8 +1338,12 @@
 		 *
 		 * First argument must be a DOM reference.
 		 * Oter arguments will be sent to this.render() method
+		 *
+		 * -- prevent rendering --
+		 * appendTo( target, false )
+		 * this way the method will not render the view.
 		 */
-		appendTo: function() {
+		var appendTo = function() {
 			
 			arguments = _.values( arguments );
 			
@@ -1383,7 +1358,7 @@
 			
 			return this;
 			
-		},
+		};
 		
 		/**
 		 * prependTo( target, p1, p2, ... )
@@ -1391,8 +1366,12 @@
 		 *
 		 * First argument must be a DOM reference.
 		 * Oter arguments will be sent to this.render() method
+		 *
+		 * -- prevent rendering --
+		 * appendTo( target, false )
+		 * this way the method will not render the view.
 		 */
-		prependTo: function() {
+		var prependTo = function() {
 			
 			arguments = _.values( arguments );
 			
@@ -1407,49 +1386,70 @@
 			
 			return this;
 			
-		}
-
-
-
-	// --------------------------------------------------
-	}); // End Backbone.View extension
-	// --------------------------------------------------
-
-
+		};
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		/**
+		 * VIEW EXTENDED PROPERTIES
+		 * Properties to be added to the Backbone.View object
+		 */
+		return {
+			
+			_methods: [],
+			
+			// Rebuilded Logic!
+			constructor: 		constructor,
+			
+			// Parent Relation Support
+			setParent:			setParent,
+			
+			// Plugins Support
+			plugins: 				[],
+			loadedPlugins: 			[],
+			loadPlugin:				loadPlugin,
+			loadPluginEvents:		loadPluginEvents,
+			loadPlugins:			loadPlugins,
+			loadPluginsEvents:		loadPluginsEvents,
+			unloadPlugin:			unloadPlugin,
+			unloadPlugins:			unloadPlugins,
+			
+			// Declarative Events
+			bindModelEvents:		bindModelEvents,			unbindModelEvents:			unbindModelEvents,
+			bindCollectionEvents:	bindCollectionEvents,		unbindCollectionEvents:		unbindCollectionEvents,
+			bindViewEvents:			bindViewEvents,				unbindViewEvents:			unbindViewEvents,
+			bindParentEvents:		bindParentEvents,			unbindParentEvents:			unbindParentEvents,
+			
+			
+			// Rendering utilities
+			renderTo: 				renderTo,
+			renderAfter: 			renderAfter,
+			renderBefore: 			renderBefore,
+			appendTo: 				appendTo,
+			prependTo: 				prependTo
+			
+		};
+		
+		
+	}; // -- BackboneKIT View Object;
+	
+	
+	// Apply BackboneKIT's View extension to Backbone.View object
+	// To extend Backbone.View object with the Kit properties I use the original Backbone's extend() method!
+	// No inheritance, callbacks and other strange thing are attached to the View itself.
+	Backbone.View = Backbone.Kit.viewOriginalExtend.call( _view, KitView() );
+	
+	
 })($,_,Backbone);
-/******************************** [[    C O R E     V I E W   ]] ***********************************/
+/******* [[    V I E W    E X T E N S I O N    ]] ******/
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// -- Global Name Wrapper --
-})( jQuery, _, Backbone );
-	
-	
 
