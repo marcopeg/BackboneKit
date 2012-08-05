@@ -74,7 +74,29 @@ BackboneKIT redesigns View's contructor() logic and offers you some API to inter
 - afterConfigure()
 - afterConstruct()
 
+Constructor Callbacks are very usefull whe you need to change some object property **before Backbone's initialization** logic.
 
+Code below let you use a simple string as initialization options:
+
+	// I want to write this:
+	new Div('my text...').renderTo('body');
+	
+	// My Div source may be something like this:
+	var Div = Backbone.View.extend({
+		
+		options: { content:'' },
+		
+		beforeConstruct: function( opt ) {
+			if ( _.isString(opt) ) return { content:opt }
+		},
+		
+		render: function() {		
+			this.$el.html( this.options.content );
+		}
+		
+	});
+
+[>> You can play whit this kind of code here!](http://jsfiddle.net/mpeg/pAnJe/)
 
 
 
