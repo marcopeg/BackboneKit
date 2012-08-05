@@ -13,6 +13,7 @@ I didn't reinvent the wheel... just put elegant white tires on Backbone!
 ## What comes with BackboneKit?
 
 * Inheritance
+* Callbacks
 * Declarative Events
 * Plugins Support
 * Global Access to Components
@@ -25,8 +26,16 @@ It contains the latest versions of jQuery, Underscore, BackboneJS and BackboneKI
 [open the BackboneKIT fiddle](http://jsfiddle.net/mpeg/r83au/)
 
 
-Inheritance
-===========
+
+
+
+
+
+
+
+
+
+## Inheritance
 
 Pretend to have this situation:
 
@@ -63,8 +72,16 @@ Just like _$call_ but works with arguments list.
 [Don't forget to play with Inheritance jsFiddle!](http://jsfiddle.net/mpeg/wU83C/)
 
 
-Declarative Events
-==================
+
+
+
+
+
+
+
+
+
+## Declarative Events
 
 **Declarative Events** lets you *define all handled events* in a clear ad **DRY notation** according to the Backbone's *event* declarations.
 NOTE: inspiration comes from Codecademy *backbone.declarative* Git:   
@@ -128,8 +145,14 @@ Listening for events is done using the clean _Declarative Events_ offered by Bac
 
 
 
-Plugin Support
-==============
+
+
+
+
+
+
+
+## Plugins Support
 
 With the work "plugin" I mean a set of property and methods to be merged with an existing object.    
 One plugin may be added to multiple objects.
