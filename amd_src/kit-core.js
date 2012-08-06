@@ -83,6 +83,7 @@ define([window.__backboneKitAmdBackbone,window.__backboneKitAmdUnderscore,window
 				|| 	prop.substring(0,1) === '_' 
 				||	_filter.indexOf(prop) >= 0
 				|| !_.isFunction(object[prop])
+				|| ( object[prop].prototype && !_.isEmpty(object[prop].prototype) )
 			) continue;
 			
 			
@@ -206,7 +207,6 @@ define([window.__backboneKitAmdBackbone,window.__backboneKitAmdUnderscore,window
 				
 				// Plugins beforeEvent()
 				for ( var i=0; i<Backbone.Kit.store.LPlugin[object._id].length; i++ ) {
-					
 					var evt = Backbone.Kit.callback( this, Backbone.Kit.store.LPlugin[this._id][i][beforeName], arguments );
 					if ( evt.hasResult('arguments') ) 	arguments = evt.getResult('arguments');
 					else if ( evt.hasResult('return') ) return evt.getResult('return');

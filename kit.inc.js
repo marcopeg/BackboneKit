@@ -1,3 +1,9 @@
+//     BackboneKIT 1.0.3
+
+//     (c) 2012-2012 Marco Pegoraro, MovableAPP.
+//     BackboneKIT may be freely distributed under the MIT license.
+//     For all details and documentation:
+//     https://github.com/movableapp/BackboneKit
 
 
 
@@ -72,6 +78,7 @@
 				|| 	prop.substring(0,1) === '_' 
 				||	_filter.indexOf(prop) >= 0
 				|| !_.isFunction(object[prop])
+				|| ( object[prop].prototype && !_.isEmpty(object[prop].prototype) )
 			) continue;
 			
 			
@@ -195,7 +202,6 @@
 				
 				// Plugins beforeEvent()
 				for ( var i=0; i<Backbone.Kit.store.LPlugin[object._id].length; i++ ) {
-					
 					var evt = Backbone.Kit.callback( this, Backbone.Kit.store.LPlugin[this._id][i][beforeName], arguments );
 					if ( evt.hasResult('arguments') ) 	arguments = evt.getResult('arguments');
 					else if ( evt.hasResult('return') ) return evt.getResult('return');
@@ -379,9 +385,6 @@
 	
 })($,_,Backbone);
 /******* [[    C O R E    N A M E S P A C E    ]] ******/
-
-
-
 
 
 
@@ -694,8 +697,6 @@
 
 
 
-
-
 /********************************************************
         VIEW EXTENSION
 *********************************************************/
@@ -764,6 +765,23 @@
 			
 			// Parent View Relation
 			if ( this.options.parent ) this.setParent( this.options.parent );
+			
+			
+			
+			// Add plugins from instance options
+			if ( this.options.plugins && _.isArray(this.options.plugins) ) {
+				
+				for ( var i in this.options.plugins ) {
+					
+					if ( this.plugins.indexOf(this.options.plugins[i]) <= 0 ) {
+						
+						this.plugins.push(this.options.plugins[i]);
+						
+					}
+					
+				}
+				
+			}
 			
 			
 			// Load associated plugins but not it's events
@@ -1060,11 +1078,20 @@
 					&& prop.substring(0,6) !== 'before'
 					&& prop.substring(0,5) !== 'after'
 				) {
-					
 					// Add method to the targer object and append a reference to the plugin info
 					// internal reference is need when removing the plugin
 					this[prop] = plugin[prop];
-					plugin._.added.methods.push( prop );
+					
+					// Try to define if the function is a real function or a constructor of an existing object.
+					// If it is a constructor we add it to the properties list!
+					if ( _.isEmpty( plugin[prop].prototype ) ) {
+						plugin._.added.methods.push( prop );	
+						
+					} else {
+						plugin._.added.properties.push( prop );
+						
+					}
+					
 				
 				
 				
@@ -1099,12 +1126,20 @@
 					&& !_.isObject(plugin[prop])
 					&& plugin._.reserved.properties.indexOf(prop) < 0
 				) {
-					
 					this[prop] = plugin[prop];
 					plugin._.added.properties.push(prop);
 					
 				}
 				
+				
+			}
+			
+			// Add loaded methods to the callbacks chain to be callbackable!
+			// All values are unique in the array!
+			for ( var i in plugin._.added.methods ) {
+				if ( this._methods.indexOf(plugin._.added.methods[i]) < 0 ) {
+					this._methods.push( plugin._.added.methods[i] );
+				}
 			}
 			
 			
@@ -1185,7 +1220,23 @@
 		var unloadPlugin = function( plugin ) {
 			
 			// Remove added methods:
-			for ( var i=0; i<plugin._.added.methods.length; i++ ) delete this[plugin._.added.methods[i]];
+			for ( var i in plugin._.added.methods ) {
+				
+				// Remove method's name from the calbackable list.
+				var _methods = [];
+				
+				for ( var j in this._methods ) {
+					
+					if ( plugin._.added.methods.indexOf(this._methods[j]) < 0 ) _methods.push(this._methods[j]);
+					
+				};
+				
+				this._methods = _methods;
+				
+				// Remove the method
+				delete this[plugin._.added.methods[i]];
+				
+			}
 			
 			// Remove added literals:
 			for ( var i=0; i<plugin._.added.literals.length; i++ ) delete this[plugin._.added.literals[i]];
@@ -1406,7 +1457,7 @@
 		 */
 		return {
 			
-			_methods: [],
+			_methods: [ 'initialize', 'render', 'remove' ],
 			
 			// Rebuilded Logic!
 			constructor: 		constructor,
@@ -1452,7 +1503,6 @@
 	
 })($,_,Backbone);
 /******* [[    V I E W    E X T E N S I O N    ]] ******/
-
 
 
 
