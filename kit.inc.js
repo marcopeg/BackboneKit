@@ -7,6 +7,19 @@
 
 
 
+// -------------------------------
+// --- Conditional AMD Wrapper ---
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        define(['jquery','underscore','backbone'], factory);
+    } else {
+        return factory(window.jQuery,window._,window.Backbone);
+    }
+}(function ($,_,Backbone) {
+// --- Conditional AMD Wrapper ---
+// -------------------------------
+
+
 
 
 
@@ -1510,3 +1523,6 @@
 
 
 
+
+// --- EndOf Conditional AMD Wrapper ---
+return Backbone; }));
