@@ -53,6 +53,11 @@ require.config({
 			deps:	[ 'kit-core-declarative' ],
 		},
 		*/
+		
+		'kit-core-router' : {
+			deps:	[ 'kit-core' ]
+		},
+		
 		'kit-core-view' : {
 			deps:	[ 'kit-core-view-extend' ]
 		}
